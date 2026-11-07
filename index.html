@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مراجعة علوم الطبيعة والحياة</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f5ef;--card:#fff;--ink:#1f2a24;--muted:#66706a;--line:#e6e2d6;
+  --l1:#c2417a;--l1s:#fbe7f0;--l2:#2f8a4e;--l2s:#e3f3e8;
+  --ok:#2f8a4e;--oks:#e3f3e8;--bad:#c0392b;--bads:#fbe5e2;
+  --chrom:#5246d8;--cell:#fdebd0;--cellb:#e2a865;
+  --acc:var(--l1);--accs:var(--l1s);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#141714;--card:#1e221f;--ink:#ecefe9;--muted:#9ba59e;--line:#2f3530;
+  --l1:#f07aab;--l1s:#3a2230;--l2:#5fc983;--l2s:#1f3527;
+  --ok:#5fc983;--oks:#1f3527;--bad:#f08070;--bads:#3b2220;--chrom:#9d95ff;--cell:#3a2f22;--cellb:#b98a50;
+}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;line-height:1.6}
+#app{max-width:620px;margin:0 auto;padding:16px 16px 48px}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+h1{font-size:1.45rem;margin:4px 0 2px}
+h2{font-size:1.15rem;margin:0}
+.sub{color:var(--muted);font-size:.92rem;margin:0 0 18px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.back{width:40px;height:40px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:1.2rem;flex:none}
+.top .t{flex:1;min-width:0}
+.top .t small{display:block;color:var(--muted);font-size:.8rem}
+.lesson{display:block;width:100%;text-align:right;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;border-inline-start:6px solid var(--c)}
+.lesson b{display:block;font-size:1.08rem}
+.lesson span{color:var(--muted);font-size:.88rem}
+.bar{height:6px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;background:var(--c);border-radius:9px;transition:width .3s}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 12px;text-align:center}
+.mode .ic{font-size:1.7rem;display:block}
+.mode b{display:block;margin-top:4px}
+.mode span{font-size:.8rem;color:var(--muted)}
+.mode.wide{grid-column:1/-1}
+/* flashcards */
+.fc{perspective:1200px;height:300px;margin:6px 0 14px}
+.fc-in{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.fc.flip .fc-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:20px;padding:22px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border:1px solid var(--line);overflow:auto}
+.front{background:var(--card)}
+.front .q{font-size:1.25rem;font-weight:600}
+.front .hint{position:absolute;bottom:12px;font-size:.8rem;color:var(--muted)}
+.backf{background:var(--accs);transform:rotateY(180deg);font-size:1.02rem}
+.backf ul{text-align:right;margin:6px 0;padding-inline-start:20px}
+.tag{font-size:.75rem;color:var(--acc);font-weight:600;margin-bottom:8px}
+.row{display:flex;gap:10px}
+.btn{flex:1;padding:13px;border-radius:14px;font-weight:600;background:var(--card);border:1px solid var(--line)}
+.btn.pri{background:var(--acc);color:#fff;border-color:transparent}
+.btn.ok{background:var(--oks);color:var(--ok);border-color:transparent}
+.btn.no{background:var(--bads);color:var(--bad);border-color:transparent}
+.btn:disabled{opacity:.45}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.85rem;margin-bottom:4px}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;background:var(--accs);color:var(--acc);font-size:.8rem;font-weight:600}
+/* quiz */
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin:8px 0 12px}
+.qcard .q{font-weight:600;font-size:1.1rem;margin-bottom:14px}
+.opt{display:block;width:100%;text-align:right;padding:13px 14px;margin-bottom:9px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);font-size:.98rem}
+.opt.right{border-color:var(--ok);background:var(--oks);color:var(--ok);font-weight:600}
+.opt.wrong{border-color:var(--bad);background:var(--bads);color:var(--bad)}
+.exp{font-size:.9rem;color:var(--muted);margin-top:6px}
+.result{text-align:center;padding:10px 0}
+.big{font-size:3rem;font-weight:700;color:var(--acc);line-height:1.1}
+.review{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:10px;font-size:.92rem}
+.review .a{color:var(--ok);font-weight:600}
+/* order game */
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 14px}
+.slot{aspect-ratio:1/1.25;border:2px dashed var(--line);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.72rem;color:var(--muted);padding:4px;text-align:center;background:var(--card)}
+.slot.filled{border-style:solid;border-color:var(--ok);color:var(--ink)}
+.slot svg{width:100%;height:auto}
+.pieces{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.piece{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:10px;text-align:center}
+.piece svg{width:70%;height:auto;display:block;margin:0 auto 4px}
+.piece small{display:block;color:var(--muted);font-size:.8rem;line-height:1.4}
+.piece.used{visibility:hidden}
+.piece.shake{animation:sh .35s;border-color:var(--bad)}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.toast{text-align:center;min-height:1.6em;font-weight:600;margin-bottom:8px}
+.toast.ok{color:var(--ok)}.toast.bad{color:var(--bad)}
+/* sort */
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.bin{border-radius:16px;padding:12px;min-height:110px;background:var(--card);border:1px solid var(--line)}
+.bin b{display:block;text-align:center;margin-bottom:6px}
+.chip{display:inline-block;font-size:.78rem;padding:3px 8px;border-radius:99px;margin:3px;background:var(--oks);color:var(--ok)}
+.item{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;text-align:center;font-weight:600;font-size:1.15rem;margin:8px 0}
+/* summary */
+.sum{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.sum h3{margin:0 0 6px;font-size:1rem;color:var(--acc)}
+.sum ul{margin:0;padding-inline-start:20px}
+.sum p{margin:0}
+table.cmp{width:100%;border-collapse:collapse;font-size:.92rem}
+table.cmp td,table.cmp th{border:1px solid var(--line);padding:8px;text-align:center}
+
+.mode.hero{background:linear-gradient(135deg,var(--acc),#6d4cff);color:#fff;border:none}
+.mode.hero span{color:rgba(255,255,255,.88)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px;scrollbar-width:none}
+.chipb{flex:none;padding:8px 14px;border-radius:99px;background:var(--card);border:1px solid var(--line);font-size:.88rem;font-weight:600}
+.chipb.on{background:var(--acc);color:#fff;border-color:transparent}
+#stage{position:relative;height:min(56vh,460px);border-radius:20px;overflow:hidden;background:radial-gradient(circle at 50% 35%,#ffffff 0%,#e6ece6 75%);border:1px solid var(--line);touch-action:none}
+@media (prefers-color-scheme:dark){#stage{background:radial-gradient(circle at 50% 35%,#2c332d 0%,#151815 75%)}}
+#stage canvas{display:block}
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lab{position:absolute;left:0;top:0;background:rgba(255,255,255,.93);color:#1f2a24;font-size:12px;font-weight:600;padding:2px 8px;border-radius:8px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.18);transition:opacity .3s;opacity:0}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:20px}
+.info3d{position:absolute;left:10px;right:10px;bottom:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:.88rem;box-shadow:0 4px 16px rgba(0,0,0,.18);transform:translateY(140%);transition:transform .3s;pointer-events:none}
+.info3d.on{transform:none}
+.info3d b{display:block;color:var(--acc)}
+.p3{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-top:10px}
+.p3 h3{margin:4px 0 6px;font-size:1.08rem;color:var(--acc)}
+.std{font-size:.95rem}
+.dots{display:flex;gap:5px;align-items:center}.dots i{width:8px;height:8px;border-radius:9px;background:var(--line);cursor:pointer;transition:width .2s}.dots i.on{background:var(--acc);width:18px}
+.tip{text-align:center;color:var(--muted);font-size:.78rem;margin:8px 0 0}
+.seg{display:flex;background:var(--bg);border-radius:12px;padding:3px;margin-top:12px;gap:3px}
+.seg button{flex:1;padding:8px;border-radius:10px;font-size:.88rem;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.14);color:var(--acc)}
+.scrub{width:100%;margin-top:14px;accent-color:var(--acc)}
+.scrubl{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted)}
+.qbtn{width:100%;margin-top:12px}.qz{margin-top:8px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ---------- SVG helpers ----------
+const X=(x,y,s,w=4)=>`<path d="M${x-s} ${y-s}L${x+s} ${y+s}M${x+s} ${y-s}L${x-s} ${y+s}" stroke="var(--chrom)" stroke-width="${w}" stroke-linecap="round" fill="none"/>`;
+const cell=`<circle cx="50" cy="50" r="45" fill="var(--cell)" stroke="var(--cellb)" stroke-width="2.5"/>`;
+const PH={
+ pro:`<svg viewBox="0 0 100 100">${cell}<circle cx="50" cy="50" r="27" fill="none" stroke="var(--cellb)" stroke-width="2" stroke-dasharray="5 4"/>${X(38,38,7)}${X(62,40,7)}${X(40,62,7)}${X(61,62,7)}</svg>`,
+ meta:`<svg viewBox="0 0 100 100">${cell}${[24,40,56,72,50].map(y=>`<path d="M10 50L50 ${y}M90 50L50 ${y}" stroke="var(--cellb)" stroke-width="1" opacity=".7"/>`).join('')}<path d="M50 10V90" stroke="var(--muted)" stroke-dasharray="3 3"/>${[26,42,58,74].map(y=>X(50,y,6,3.5)).join('')}</svg>`,
+ ana:`<svg viewBox="0 0 100 100">${cell}<path d="M50 10V90" stroke="var(--muted)" stroke-dasharray="3 3"/>${[28,44,60,74].map(y=>`<path d="M34 ${y-6}L26 ${y}L34 ${y+6}M66 ${y-6}L74 ${y}L66 ${y+6}" stroke="var(--chrom)" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 50L26 ${y}M88 50L74 ${y}" stroke="var(--cellb)" stroke-width="1" opacity=".7"/>`).join('')}</svg>`,
+ telo:`<svg viewBox="0 0 100 100">${[27,73].map(c=>`<circle cx="${c}" cy="50" r="22" fill="var(--cell)" stroke="var(--cellb)" stroke-width="2.5"/><circle cx="${c}" cy="50" r="12" fill="none" stroke="var(--cellb)" stroke-width="1.5"/>${X(c,50,5,3)}`).join('')}</svg>`
+};
+const PHASES=[
+ {k:'pro',n:'المرحلة التمهيدية',d:'تتكاثف الصبغيات ويزول الغلاف النووي'},
+ {k:'meta',n:'المرحلة الاستوائية',d:'تصطف الصبغيات على خط الاستواء'},
+ {k:'ana',n:'المرحلة الانفصالية',d:'ينفصل الكروماتيدان وينتقل كل منهما نحو أحد القطبين'},
+ {k:'telo',n:'المرحلة النهائية',d:'تتكون خليتان بنتان متماثلتان وراثياً'}
+];
+
+// ---------- Content ----------
+const L=[{
+ id:'l1',color:'var(--l1)',soft:'var(--l1s)',
+ title:'آليات النمو والتجديد الخلوي والانقسام',
+ cards:[
+  ['ما هو النمو؟','زيادة أبعاد وكتلة الكائن الحي، ويحدث بآليتين:<ul><li>زيادة عدد الخلايا (الانقسام الخيطي المتساوي)</li><li>زيادة حجم الخلايا (الاستطالة)</li></ul>'],
+  ['أين توجد مناطق النمو عند النبات؟','في نهايات الجذر والساق، وتسمى <b>القمم النامية</b>.'],
+  ['ما هي المنطقة المرستيمية؟','منطقة فيها انقسامات خلوية كثيرة (زيادة عدد الخلايا).'],
+  ['ما هي منطقة الاستطالة؟','المنطقة التي تزداد فيها أبعاد الخلايا.'],
+  ['كيف يحدث النمو عند الحيوان؟','على مستوى الأنسجة المتخصصة، خاصة <b>النسيج الغضروفي</b> بفضل خلاياه الإنشائية.'],
+  ['كيف تستطيل الخلايا؟','بامتصاص الماء داخل الخلايا، فتنتفخ الفجوات وتزداد أبعادها.'],
+  ['عرّف الانقسام الخيطي المتساوي (La mitose)','انقسام على مستوى الخلايا تنقسم فيه الخلية الأم إلى خليتين بنتين متماثلتين وراثياً وتحملان نفس الصيغة الصبغية <b>(2ن)</b>.'],
+  ['ماذا يحدث في المرحلة التمهيدية؟','تتكاثف الصبغيات، ويزول الغلاف النووي.'],
+  ['ماذا يحدث في المرحلة الاستوائية؟','تصطف الصبغيات على خط الاستواء.'],
+  ['ماذا يحدث في المرحلة الانفصالية؟','ينفصل الكروماتيدان، وينتقل كل منهما نحو أحد القطبين.'],
+  ['ماذا يحدث في المرحلة النهائية؟','تتكون خليتان بنتان متماثلتان وراثياً.'],
+  ['صف بنية الصبغي أثناء الانقسام','كروماتيدان شقيقان مرتبطان بالقسيم المركزي. يتضاعف ADN قبل الانقسام فيصبح الصبغي مكوناً من كروماتيدين.'],
+  ['ما أهمية الانقسام الخيطي المتساوي؟','<ul><li>زيادة عدد الخلايا وبالتالي نمو الكائن الحي</li><li>تجديد الخلايا وتعويض التالف منها</li><li>الحفاظ على ثبات عدد الصبغيات</li><li>المحافظة على الصفات الوراثية</li></ul>'],
+  ['الفرق بين الانقسام عند الخلية الحيوانية والنباتية','<b>الحيوانية:</b> اختناق هيولي (تضيق الغشاء)<br><b>النباتية:</b> صفيحة خلوية (حاجز وسطي)']
+ ],
+ quiz:[
+  ['النمو هو:',['زيادة أبعاد وكتلة الكائن الحي','زيادة عدد الأعضاء فقط','نقص حجم الخلايا','تعويض الخلايا التالفة فقط'],'يحدث بزيادة عدد الخلايا وزيادة حجمها.'],
+  ['تسمى مناطق النمو في نهايات الجذر والساق:',['القمم النامية','الأنسجة الغضروفية','الأوعية الخشبية','الشعيرات الجذرية']],
+  ['المنطقة التي تحدث فيها انقسامات خلوية كثيرة هي:',['المنطقة المرستيمية','منطقة الاستطالة','منطقة الشعيرات الجذرية','اللحاء']],
+  ['في منطقة الاستطالة:',['تزداد أبعاد الخلايا','يزداد عدد الخلايا بسرعة','يزول الغلاف النووي','تتوقف الخلايا عن امتصاص الماء']],
+  ['يحدث النمو عند الحيوان خاصة على مستوى:',['النسيج الغضروفي','النسيج العصبي','الدم','الشعر']],
+  ['تستطيل الخلايا بفضل:',['امتصاص الماء فتنتفخ الفجوات','تضاعف ADN','تكاثف الصبغيات','زوال الغلاف النووي']],
+  ['الخليتان البنتان الناتجتان عن الانقسام الخيطي المتساوي:',['متماثلتان وراثياً وتحملان 2ن','مختلفتان وراثياً','تحمل كل منهما ن فقط','تحمل كل منهما 4ن']],
+  ['تتكاثف الصبغيات ويزول الغلاف النووي في المرحلة:',['التمهيدية','الاستوائية','الانفصالية','النهائية']],
+  ['تصطف الصبغيات على خط الاستواء في المرحلة:',['الاستوائية','التمهيدية','الانفصالية','النهائية']],
+  ['ينفصل الكروماتيدان ويتجه كل منهما نحو أحد القطبين في المرحلة:',['الانفصالية','الاستوائية','التمهيدية','النهائية']],
+  ['تتكون خليتان بنتان في المرحلة:',['النهائية','الانفصالية','الاستوائية','التمهيدية']],
+  ['يرتبط الكروماتيدان الشقيقان بواسطة:',['القسيم المركزي','الغلاف النووي','الفجوة','الصفيحة الخلوية']],
+  ['يتضاعف ADN:',['قبل الانقسام','أثناء المرحلة الاستوائية','أثناء المرحلة النهائية','لا يتضاعف أبداً'],'لذلك يكون الصبغي مكوناً من كروماتيدين عند بداية الانقسام.'],
+  ['تنقسم الخلية الحيوانية في نهاية الانقسام بواسطة:',['اختناق هيولي (تضيق الغشاء)','صفيحة خلوية (حاجز وسطي)','انتفاخ الفجوات','زوال القسيم المركزي']],
+  ['تنقسم الخلية النباتية في نهاية الانقسام بواسطة:',['صفيحة خلوية (حاجز وسطي)','اختناق هيولي (تضيق الغشاء)','تكاثف الصبغيات','امتصاص الماء']],
+  ['أي مما يلي <u>ليس</u> من أهمية الانقسام الخيطي المتساوي؟',['تغيير الصفات الوراثية','تجديد الخلايا وتعويض التالف','الحفاظ على ثبات عدد الصبغيات','زيادة عدد الخلايا'],'الانقسام يحافظ على الصفات الوراثية ولا يغيرها.']
+ ],
+ sort:{a:'🌱 النبات',b:'🦴 الحيوان',items:[['القمم النامية','a'],['نهايات الجذر والساق','a'],['المنطقة المرستيمية','a'],['منطقة الاستطالة','a'],['صفيحة خلوية (حاجز وسطي)','a'],['النسيج الغضروفي','b'],['الخلايا الإنشائية','b'],['اختناق هيولي (تضيق الغشاء)','b']]},
+ summary:()=>`
+  <div class="sum"><h3>1. مظاهر النمو</h3><p>النمو = زيادة أبعاد وكتلة الكائن الحي، بآليتين: زيادة عدد الخلايا (الانقسام الخيطي المتساوي) وزيادة حجمها (الاستطالة).</p></div>
+  <div class="sum"><h3>2. مناطق النمو</h3><ul><li><b>النبات:</b> القمم النامية في نهايات الجذر والساق ← المنطقة المرستيمية (انقسامات كثيرة) + منطقة الاستطالة (تزداد أبعاد الخلايا).</li><li><b>الحيوان:</b> الأنسجة المتخصصة، خاصة النسيج الغضروفي بفضل خلاياه الإنشائية.</li></ul></div>
+  <div class="sum"><h3>3. آليات النمو</h3><ul><li>زيادة عدد الخلايا: بالانقسام الخيطي المتساوي.</li><li>استطالة الخلايا: امتصاص الماء ← انتفاخ الفجوات ← زيادة الأبعاد.</li></ul></div>
+  <div class="sum"><h3>4. الانقسام الخيطي المتساوي</h3><p>خلية أم ← خليتان بنتان متماثلتان وراثياً (2ن).</p>
+   <div class="slots" style="margin-top:10px">${PHASES.map(p=>`<div class="slot filled">${PH[p.k]}<b>${p.n.replace('المرحلة ','')}</b></div>`).join('')}</div>
+   <ul>${PHASES.map(p=>`<li><b>${p.n}:</b> ${p.d}.</li>`).join('')}</ul></div>
+  <div class="sum"><h3>5. بنية الصبغي</h3><p>كروماتيدان شقيقان + قسيم مركزي. يتضاعف ADN قبل الانقسام.</p></div>
+  <div class="sum"><h3>6. الأهمية</h3><ul><li>زيادة عدد الخلايا ونمو الكائن</li><li>تجديد الخلايا وتعويض التالف</li><li>ثبات عدد الصبغيات</li><li>المحافظة على الصفات الوراثية</li></ul></div>
+  <div class="sum"><h3>7. نبات / حيوان</h3><table class="cmp"><tr><th>الخلية الحيوانية</th><th>الخلية النباتية</th></tr><tr><td>اختناق هيولي (تضيق الغشاء)</td><td>صفيحة خلوية (حاجز وسطي)</td></tr></table></div>`
+},{
+ id:'l2',color:'var(--l2)',soft:'var(--l2s)',
+ title:'مصدر المادة العضوية ودوران النسغ',
+ cards:[
+  ['أين تُصنع المادة العضوية؟','في <b>الأوراق</b> بعملية <b>التركيب الضوئي</b>.'],
+  ['ما شروط التركيب الضوئي؟','<ul><li>وجود الضوء</li><li>وجود اليخضور</li><li>توفر الماء و CO₂</li></ul>'],
+  ['ما نتيجة التركيب الضوئي؟','تتشكل المادة العضوية (سكريات) في الأوراق.'],
+  ['عبر ماذا تنتقل المادة العضوية؟ وبأي شكل؟','عبر <b>اللحاء</b> على شكل <b>محلول سكري</b>.'],
+  ['ما اتجاه حركة المادة العضوية؟','من الأوراق نحو الأعضاء المستهلكة (الجذور، الثمار...) وأعضاء التخزين.'],
+  ['كيف تستعمل الأعضاء النامية المادة العضوية؟','تستعملها في النمو (الأوراق، الساق...).'],
+  ['كيف تستعمل الجذور المادة العضوية؟','في التنفس والنمو.'],
+  ['كيف تُخزَّن المادة العضوية في الأعضاء المدخرة؟','على شكل <b>نشا</b> في البذور أو الدرنات.'],
+  ['ما هو دوران النسغ؟','حركة محلول النسغ في النبات، وينقسم إلى نوعين: النسغ الخام والنسغ الكامل.'],
+  ['النسغ الخام','<b>صاعد</b>: ينقل الماء والأملاح المعدنية من الجذور إلى الأوراق، ويسير في <b>الأوعية الخشبية</b>.'],
+  ['النسغ الكامل','<b>نازل</b>: ينقل المادة العضوية من الأوراق إلى باقي الأعضاء، ويسير في <b>اللحاء</b>.'],
+  ['عبر ماذا يمتص النبات الماء والأملاح؟','عبر الشعيرات الجذرية.'],
+  ['ما الذي يسبب صعود النسغ الخام؟','الخاصية الشعرية وقوة النتح.'],
+  ['ما الذي يسمح بنقل النسغ الكامل في اللحاء؟','الضغط الأسموزي.'],
+  ['ما أهمية دوران النسغ؟','<ul><li>تغذية جميع أعضاء النبات بالمادة العضوية</li><li>تحقيق النمو والتطور</li><li>تخزين الفائض من المواد العضوية</li><li>المحافظة على توازن النبات وحيويته</li></ul>']
+ ],
+ quiz:[
+  ['تُصنع المادة العضوية في:',['الأوراق','الجذور','الدرنات','الأوعية الخشبية']],
+  ['تُصنع المادة العضوية بعملية:',['التركيب الضوئي','التنفس','النتح','الامتصاص']],
+  ['أي مما يلي <u>ليس</u> من شروط التركيب الضوئي؟',['وجود النشا','وجود الضوء','وجود اليخضور','توفر الماء و CO₂']],
+  ['نتيجة التركيب الضوئي هي:',['تشكل سكريات في الأوراق','امتصاص الأملاح المعدنية','تشكل الماء في الجذور','صعود النسغ الخام']],
+  ['تنتقل المادة العضوية من الأوراق إلى باقي النبات عبر:',['اللحاء','الأوعية الخشبية','الشعيرات الجذرية','اليخضور']],
+  ['تنتقل المادة العضوية على شكل:',['محلول سكري','نشا صلب','أملاح معدنية','غاز CO₂']],
+  ['اتجاه انتقال المادة العضوية:',['من الأوراق نحو الأعضاء المستهلكة وأعضاء التخزين','من الجذور نحو الأوراق فقط','من الثمار نحو الأوراق','لا تنتقل وتبقى في الأوراق']],
+  ['تُخزن المادة العضوية في البذور والدرنات على شكل:',['نشا','محلول سكري','أملاح معدنية','ماء']],
+  ['تستعمل الجذور المادة العضوية في:',['التنفس والنمو','التركيب الضوئي','صنع اليخضور','النتح']],
+  ['النسغ الخام ينقل:',['الماء والأملاح المعدنية','المادة العضوية','النشا','السكريات فقط']],
+  ['يسير النسغ الخام في:',['الأوعية الخشبية','اللحاء','الفجوات','الثغور']],
+  ['النسغ الكامل نسغ:',['نازل يسير في اللحاء','صاعد يسير في الأوعية الخشبية','صاعد يسير في اللحاء','نازل يسير في الأوعية الخشبية']],
+  ['يمتص النبات الماء والأملاح من التربة عبر:',['الشعيرات الجذرية','الأوراق','اللحاء','الثمار']],
+  ['يصعد النسغ الخام بفعل:',['الخاصية الشعرية وقوة النتح','الضغط الأسموزي','التركيب الضوئي','الجاذبية']],
+  ['ينتقل النسغ الكامل في اللحاء بفضل:',['الضغط الأسموزي','قوة النتح','الخاصية الشعرية','الشعيرات الجذرية']],
+  ['أي مما يلي <u>ليس</u> من أهمية دوران النسغ؟',['صنع الأملاح المعدنية','تغذية أعضاء النبات بالمادة العضوية','تحقيق النمو والتطور','تخزين الفائض من المواد العضوية']]
+ ],
+ sort:{a:'⬆️ النسغ الخام',b:'⬇️ النسغ الكامل',items:[['الماء والأملاح المعدنية','a'],['صاعد','a'],['الأوعية الخشبية','a'],['من الجذور إلى الأوراق','a'],['الخاصية الشعرية وقوة النتح','a'],['المادة العضوية (سكريات)','b'],['نازل','b'],['اللحاء','b'],['من الأوراق إلى باقي الأعضاء','b'],['الضغط الأسموزي','b']]},
+ summary:()=>`
+  <div class="sum"><h3>1. مصدر المادة العضوية</h3><p>تُصنع في الأوراق بالتركيب الضوئي. الشروط: الضوء + اليخضور + الماء و CO₂. النتيجة: سكريات في الأوراق.</p></div>
+  <div class="sum"><h3>2. انتقال المادة العضوية</h3><p>عبر اللحاء على شكل محلول سكري، من الأوراق نحو الأعضاء المستهلكة (الجذور، الثمار...) وأعضاء التخزين.</p></div>
+  <div class="sum"><h3>3. الاستهلاك والتخزين</h3><ul><li><b>الأعضاء النامية:</b> للنمو</li><li><b>الجذور:</b> للتنفس والنمو</li><li><b>الأعضاء المدخرة:</b> تخزين على شكل نشا (بذور، درنات)</li></ul></div>
+  <div class="sum"><h3>4. دوران النسغ</h3><table class="cmp"><tr><th></th><th>النسغ الخام</th><th>النسغ الكامل</th></tr><tr><td>الاتجاه</td><td>صاعد</td><td>نازل</td></tr><tr><td>المحتوى</td><td>ماء + أملاح معدنية</td><td>مادة عضوية</td></tr><tr><td>المسار</td><td>الجذور ← الأوراق</td><td>الأوراق ← باقي الأعضاء</td></tr><tr><td>الأوعية</td><td>الأوعية الخشبية</td><td>اللحاء</td></tr><tr><td>القوة المحركة</td><td>الخاصية الشعرية + النتح</td><td>الضغط الأسموزي</td></tr></table></div>
+  <div class="sum"><h3>5. كيفية الدوران</h3><ol style="margin:0;padding-inline-start:20px"><li>امتصاص الماء والأملاح عبر الشعيرات الجذرية</li><li>صعود النسغ الخام في الأوعية الخشبية</li><li>نقل النسغ الكامل في اللحاء</li></ol></div>
+  <div class="sum"><h3>6. الأهمية</h3><ul><li>تغذية جميع الأعضاء</li><li>النمو والتطور</li><li>تخزين الفائض</li><li>توازن النبات وحيويته</li></ul></div>`
+}];
+
+// ---------- State ----------
+let S={known:{}};
+try{S=JSON.parse(localStorage.getItem('svt1as'))||S}catch(e){}
+const save=()=>{try{localStorage.setItem('svt1as',JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s), app=$('#app');
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const knownCount=l=>l.cards.filter((_,i)=>S.known[l.id+i]).length;
+function theme(l){if(window.V3)V3.close();const r=document.documentElement.style;r.setProperty('--acc',l?l.color:'var(--l1)');r.setProperty('--accs',l?l.soft:'var(--l1s)')}
+function hdr(title,sub,back){return `<div class="top"><button class="back" onclick="${back}">→</button><div class="t"><h2>${title}</h2>${sub?`<small>${sub}</small>`:''}</div></div>`}
+
+// ---------- Screens ----------
+function home(){
+ theme(null);
+ app.innerHTML=`<h1>مراجعة علوم الطبيعة والحياة</h1><p class="sub">السنة الأولى ثانوي · اختر الدرس</p>
+ ${L.map((l,i)=>{const k=knownCount(l);return `<button class="lesson" style="--c:${l.color}" onclick="lesson(${i})"><b>${l.title}</b><span>${k}/${l.cards.length} بطاقة محفوظة · ${l.quiz.length} سؤال</span><div class="bar"><i style="width:${k/l.cards.length*100}%"></i></div></button>`}).join('')}
+ <button class="lesson" style="--c:var(--chrom)" onclick="quiz(-1)"><b>🎯 اختبار شامل</b><span>أسئلة مختلطة من الدرسين</span></button>`;
+}
+function lesson(i){
+ const l=L[i];theme(l);
+ app.innerHTML=hdr(l.title,'',"home()")+`<div class="grid">
+  <button class="mode wide hero" onclick="explain(${i})"><span class="ic">🧊</span><b>الشرح التفاعلي ثلاثي الأبعاد</b><span>${SCN[i].length} مشاهد · دوّر، اضغط، وشاهد العملية تحدث</span></button>
+  <button class="mode wide" onclick="summary(${i})"><span class="ic">📄</span><b>الملخص</b><span>الدرس كاملاً في صفحة واحدة</span></button>
+  <button class="mode" onclick="cards(${i})"><span class="ic">🃏</span><b>البطاقات</b><span>${knownCount(l)}/${l.cards.length} محفوظة</span></button>
+  <button class="mode" onclick="quiz(${i})"><span class="ic">✅</span><b>اختبار</b><span>${l.quiz.length} سؤال</span></button>
+  <button class="mode" onclick="sortGame(${i})"><span class="ic">🗂️</span><b>تصنيف</b><span>${l.sort.a.slice(2)} أم ${l.sort.b.slice(2)}؟</span></button>
+  ${i===0?`<button class="mode" onclick="order()"><span class="ic">🔬</span><b>رتّب المراحل</b><span>مراحل الانقسام</span></button>`:`<button class="mode" onclick="cards(${i},true)"><span class="ic">🔁</span><b>غير المحفوظة</b><span>راجع ما تبقى</span></button>`}
+  ${i===0?`<button class="mode wide" onclick="cards(${i},true)"><span class="ic">🔁</span><b>البطاقات غير المحفوظة</b><span>راجع ما تبقى فقط</span></button>`:''}
+ </div>`;
+}
+function summary(i){const l=L[i];theme(l);app.innerHTML=hdr('الملخص',l.title,`lesson(${i})`)+l.summary();scrollTo(0,0)}
+
+// 3D explanation
+const SCN=[['🌱 مناطق النمو','🔬 الانقسام الخيطي','🧬 بنية الصبغي'],['🌿 دوران النسغ','🔎 الأوعية الناقلة']];
+function explain(i,s=0){
+ const l=L[i];theme(l);
+ app.innerHTML=hdr('الشرح ثلاثي الأبعاد',l.title,`lesson(${i})`)+`<div class="chips">${SCN[i].map((n,k)=>`<button class="chipb ${k===s?'on':''}" onclick="explain(${i},${k})">${n}</button>`).join('')}</div><div id="stage"><div id="labels"></div><div id="info3d" class="info3d"></div><div class="loading">⏳ جارٍ تحميل المشهد...</div></div><div id="ctrl"></div>`;
+ if(window.V3)V3.open(i,s);else{window.__pend=[i,s];setTimeout(()=>{const ld=document.querySelector('#stage .loading');if(ld&&!window.V3)ld.textContent='تعذّر تحميل مكتبة Three.js. تحقّق من اتصالك بالإنترنت ثم أعد المحاولة.'},12000)}
+}
+
+// flashcards
+let F;
+function cards(i,onlyUnknown){
+ const l=L[i];theme(l);
+ let idx=l.cards.map((_,j)=>j);if(onlyUnknown)idx=idx.filter(j=>!S.known[l.id+j]);
+ if(!idx.length){app.innerHTML=hdr('البطاقات',l.title,`lesson(${i})`)+`<div class="result"><div class="big">🎉</div><p>كل البطاقات محفوظة!</p><button class="btn pri" onclick="resetKnown(${i})">إعادة البدء من جديد</button></div>`;return}
+ F={i,order:shuffle(idx),p:0};drawCard();
+}
+function resetKnown(i){L[i].cards.forEach((_,j)=>delete S.known[L[i].id+j]);save();cards(i)}
+function drawCard(){
+ const l=L[F.i];
+ if(F.p>=F.order.length){app.innerHTML=hdr('البطاقات',l.title,`lesson(${F.i})`)+`<div class="result"><div class="big">${knownCount(l)}/${l.cards.length}</div><p>بطاقة محفوظة</p><div class="row"><button class="btn" onclick="cards(${F.i},true)">راجع غير المحفوظة</button><button class="btn pri" onclick="lesson(${F.i})">رجوع</button></div></div>`;return}
+ const j=F.order[F.p],c=l.cards[j];
+ app.innerHTML=hdr('البطاقات',l.title,`lesson(${F.i})`)+`<div class="meta"><span>${F.p+1} / ${F.order.length}</span>${S.known[l.id+j]?'<span class="pill">محفوظة ✓</span>':''}</div>
+ <div class="fc" id="fc" onclick="this.classList.toggle('flip')"><div class="fc-in"><div class="face front"><div class="q">${c[0]}</div><div class="hint">اضغط لقلب البطاقة</div></div><div class="face backf"><div class="tag">${c[0]}</div><div>${c[1]}</div></div></div></div>
+ <div class="row"><button class="btn no" onclick="mark(false)">✗ لم أحفظها</button><button class="btn ok" onclick="mark(true)">✓ أعرفها</button></div>
+ <div class="row" style="margin-top:10px"><button class="btn" ${F.p?'':'disabled'} onclick="F.p--;drawCard()">السابقة</button><button class="btn" onclick="F.p++;drawCard()">تخطي</button></div>`;
+}
+function mark(k){const l=L[F.i],j=F.order[F.p];if(k)S.known[l.id+j]=1;else delete S.known[l.id+j];save();F.p++;drawCard()}
+
+// quiz
+let Q;
+function quiz(i){
+ let pool;
+ if(i<0){theme(null);pool=shuffle(L.flatMap((l,li)=>l.quiz.map(q=>[...q,li]))).slice(0,15)}
+ else{theme(L[i]);pool=shuffle(L[i].quiz)}
+ Q={i,pool:pool.map(q=>({q:q[0],ans:q[1][0],opts:shuffle(q[1]),exp:q[2]||''})),p:0,score:0,wrong:[],done:false};
+ drawQ();
+}
+function drawQ(){
+ const back=Q.i<0?'home()':`lesson(${Q.i})`,title=Q.i<0?'اختبار شامل':'اختبار',sub=Q.i<0?'الدرسان':L[Q.i].title;
+ if(Q.p>=Q.pool.length){
+  const pct=Math.round(Q.score/Q.pool.length*100);
+  app.innerHTML=hdr(title,sub,back)+`<div class="result"><div class="big">${Q.score}/${Q.pool.length}</div><p>${pct>=90?'ممتاز! 🌟':pct>=70?'جيد جداً 👏':pct>=50?'مقبول، واصل المراجعة 💪':'راجع الملخص ثم أعد المحاولة 📖'}</p></div>
+  <div class="row"><button class="btn" onclick="${back}">رجوع</button><button class="btn pri" onclick="quiz(${Q.i})">إعادة الاختبار</button></div>
+  ${Q.wrong.length?`<h2 style="margin:20px 0 4px">أخطاؤك</h2>`+Q.wrong.map(w=>`<div class="review"><div>${w.q}</div><div>إجابتك: <s>${w.your}</s></div><div class="a">الصحيح: ${w.ans}</div></div>`).join(''):''}`;
+  scrollTo(0,0);return;
+ }
+ const q=Q.pool[Q.p];
+ app.innerHTML=hdr(title,sub,back)+`<div class="meta"><span>السؤال ${Q.p+1} / ${Q.pool.length}</span><span>النتيجة: ${Q.score}</span></div><div class="bar"><i style="width:${Q.p/Q.pool.length*100}%;background:var(--acc)"></i></div>
+ <div class="qcard"><div class="q">${q.q}</div>${q.opts.map((o,k)=>`<button class="opt" data-k="${k}" onclick="pick(${k})">${o}</button>`).join('')}<div id="exp"></div></div>
+ <button class="btn pri" id="next" style="width:100%;display:none" onclick="Q.p++;drawQ()">التالي ←</button>`;
+}
+function pick(k){
+ const q=Q.pool[Q.p];if(q.answered)return;q.answered=1;
+ const ok=q.opts[k]===q.ans;if(ok)Q.score++;else Q.wrong.push({q:q.q,your:q.opts[k],ans:q.ans});
+ document.querySelectorAll('.opt').forEach(b=>{const o=q.opts[b.dataset.k];if(o===q.ans)b.classList.add('right');else if(+b.dataset.k===k)b.classList.add('wrong')});
+ $('#exp').innerHTML=`<div class="exp">${ok?'✓ إجابة صحيحة':'✗ الإجابة الصحيحة: <b>'+q.ans+'</b>'}${q.exp?'<br>'+q.exp:''}</div>`;
+ $('#next').style.display='block';
+}
+
+// mitosis order game
+let O;
+function order(){theme(L[0]);O={placed:[],pieces:shuffle(PHASES.map((p,i)=>i)),err:0};drawO()}
+function drawO(msg='',cls=''){
+ const done=O.placed.length===4;
+ app.innerHTML=hdr('رتّب مراحل الانقسام','الانقسام الخيطي المتساوي',"lesson(0)")+
+ `<p class="sub" style="margin-bottom:8px">اضغط على المراحل بالترتيب الصحيح، من الأولى إلى الأخيرة.</p>
+ <div class="slots">${[0,1,2,3].map(s=>O.placed[s]!==undefined?`<div class="slot filled">${PH[PHASES[s].k]}<b>${s+1}. ${PHASES[s].n.replace('المرحلة ','')}</b></div>`:`<div class="slot">${s+1}</div>`).join('')}</div>
+ <div class="toast ${cls}">${msg}</div>
+ ${done?`<div class="result"><div class="big">${O.err?'👍':'🏆'}</div><p>${O.err?`أتممت الترتيب مع ${O.err} خطأ`:'ترتيب مثالي بدون أخطاء!'}</p></div>
+  ${PHASES.map((p,i)=>`<div class="review"><b>${i+1}. ${p.n}:</b> ${p.d}.</div>`).join('')}
+  <div class="row" style="margin-top:14px"><button class="btn" onclick="lesson(0)">رجوع</button><button class="btn pri" onclick="order()">إعادة اللعب</button></div>`
+ :`<div class="pieces">${O.pieces.map(i=>`<button class="piece ${O.placed.includes(i)?'used':''}" id="pc${i}" onclick="place(${i})">${PH[PHASES[i].k]}<small>${PHASES[i].d}</small></button>`).join('')}</div>`}`;
+}
+function place(i){
+ if(i===O.placed.length){O.placed.push(i);drawO('✓ صحيح: '+PHASES[i].n,'ok')}
+ else{O.err++;const el=$('#pc'+i);el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');const t=$('.toast');t.className='toast bad';t.textContent='✗ ليست هذه المرحلة رقم '+(O.placed.length+1)}
+}
+
+// sorting game
+let G;
+function sortGame(i){const l=L[i];theme(l);G={i,items:shuffle(l.sort.items),p:0,a:[],b:[],err:0};drawG()}
+function drawG(msg='',cls=''){
+ const s=L[G.i].sort,done=G.p>=G.items.length;
+ app.innerHTML=hdr('تصنيف',L[G.i].title,`lesson(${G.i})`)+
+ `<div class="meta"><span>${Math.min(G.p+1,G.items.length)} / ${G.items.length}</span><span>أخطاء: ${G.err}</span></div>
+ ${done?`<div class="result"><div class="big">${G.err?'👍':'🏆'}</div><p>${G.err?`انتهيت مع ${G.err} خطأ`:'تصنيف مثالي!'}</p></div>`
+ :`<div class="item">${G.items[G.p][0]}</div><div class="toast ${cls}">${msg}</div><div class="row"><button class="btn pri" onclick="drop('a')">${s.a}</button><button class="btn pri" onclick="drop('b')">${s.b}</button></div>`}
+ <div class="bins"><div class="bin"><b>${s.a}</b>${G.a.map(t=>`<span class="chip">${t}</span>`).join('')}</div><div class="bin"><b>${s.b}</b>${G.b.map(t=>`<span class="chip">${t}</span>`).join('')}</div></div>
+ ${done?`<div class="row"><button class="btn" onclick="lesson(${G.i})">رجوع</button><button class="btn pri" onclick="sortGame(${G.i})">إعادة اللعب</button></div>`:''}`;
+}
+function drop(side){
+ const [t,c]=G.items[G.p];
+ if(side===c){G[c].push(t);G.p++;drawG('✓ صحيح','ok')}
+ else{G.err++;drawG('✗ خطأ، حاول مرة أخرى','bad')}
+}
+
+home();
+</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+// ---------- helpers ----------
+const sm=(x,a,b)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t)};
+const lerp=(a,b,t)=>a+(b-a)*t;
+const v3=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z);
+const IDQ=new THREE.Quaternion();
+const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.5,metalness:0},o));
+const T=(c,op,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,transparent:true,opacity:op,roughness:.35,depthWrite:false,side:THREE.DoubleSide},o));
+const info=(o,t,d)=>{o.userData.info=typeof t==='function'?t:{t,d};return o};
+const noPick=o=>{o.userData.noPick=1;return o};
+const curve=pts=>{const c=new THREE.CatmullRomCurve3(pts.map(p=>p.isVector3?p.clone():v3(...p)),false,'centripetal');c.len=c.getLength();return c};
+const tube=(pts,r,mat,seg=48)=>new THREE.Mesh(new THREE.TubeGeometry(curve(pts),seg,r,8,false),mat);
+const ball=(r,mat,p)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(r,22,16),mat);if(p)m.position.set(...p);return m};
+const lb=(t,p,show)=>({t,p,show});
+
+function flow(parent,curves,n,color,size,speed,offset){
+  const im=noPick(new THREE.InstancedMesh(new THREE.SphereGeometry(size,8,6),M(color,{emissive:color,emissiveIntensity:.6}),n));parent.add(im);
+  const P=[...Array(n)].map((_,i)=>({c:i%curves.length,u:Math.random(),j:v3((Math.random()-.5)*.04,(Math.random()-.5)*.04,(Math.random()-.5)*.04).add(offset||v3())}));
+  const d=new THREE.Object3D();
+  return {on:1,vis:1,update(dt){this.vis+=(this.on-this.vis)*Math.min(1,dt*4);im.visible=this.vis>.02;if(!im.visible)return;
+    P.forEach((p,i)=>{const c=curves[p.c];p.u=(p.u+dt*speed/c.len)%1;d.position.copy(c.getPointAt(p.u)).add(p.j);
+      const e=Math.min(1,p.u/.05,(1-p.u)/.05);d.scale.setScalar(Math.max(.001,this.vis*e));d.updateMatrix();im.setMatrixAt(i,d.matrix)});
+    im.instanceMatrix.needsUpdate=true}};
+}
+function lin(parent,n,color,size,gen,dur){
+  const im=noPick(new THREE.InstancedMesh(new THREE.SphereGeometry(size,8,6),M(color,{emissive:color,emissiveIntensity:.6}),n));parent.add(im);
+  const P=[...Array(n)].map(()=>Object.assign(gen(),{u:Math.random()}));
+  const d=new THREE.Object3D();
+  return {on:1,vis:1,update(dt){this.vis+=(this.on-this.vis)*Math.min(1,dt*4);im.visible=this.vis>.02;if(!im.visible)return;
+    P.forEach((p,i)=>{p.u+=dt/dur;if(p.u>=1){Object.assign(p,gen());p.u=0}d.position.lerpVectors(p.a,p.b,p.u);
+      const e=Math.min(1,p.u/.1,(1-p.u)/.1);d.scale.setScalar(Math.max(.001,this.vis*e));d.updateMatrix();im.setMatrixAt(i,d.matrix)});
+    im.instanceMatrix.needsUpdate=true}};
+}
+
+// ---------- engine ----------
+let R,cam,ctl,scn,S,stepI=0,raf=0,fly=null,stage,ro,camKey='',time=0;
+const clock=new THREE.Clock(),ray=new THREE.Raycaster(),ptr=new THREE.Vector2(),tv=v3();
+const $=id=>document.getElementById(id);
+const V={};
+
+function ensureR(){
+  if(R)return;
+  R=new THREE.WebGLRenderer({antialias:true,alpha:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
+  const el=R.domElement;el.style.touchAction='none';let d=null;
+  el.addEventListener('pointerdown',e=>{d=[e.clientX,e.clientY]});
+  el.addEventListener('pointerup',e=>{if(d&&Math.hypot(e.clientX-d[0],e.clientY-d[1])<8)pick(e);d=null});
+}
+V.open=(li,si)=>{
+  V.close();stage=$('stage');if(!stage)return;ensureR();
+  stage.insertBefore(R.domElement,stage.firstChild);
+  scn=new THREE.Scene();cam=new THREE.PerspectiveCamera(45,1,.05,100);
+  ctl=new OrbitControls(cam,R.domElement);ctl.enableDamping=true;ctl.enablePan=false;ctl.minDistance=1.2;ctl.maxDistance=14;
+  scn.add(new THREE.HemisphereLight(0xffffff,0x667788,1.5));const dl=new THREE.DirectionalLight(0xffffff,1.7);dl.position.set(3,6,5);scn.add(dl);
+  S=SC[li][si](scn);stepI=0;camKey='';time=0;
+  const le=$('labels');le.innerHTML='';(S.labels||[]).forEach(l=>{l.el=document.createElement('div');l.el.className='lab';le.appendChild(l.el)});
+  buildCtrl();go(0,true);
+  const ld=stage.querySelector('.loading');if(ld)ld.remove();
+  resize();ro=new ResizeObserver(resize);ro.observe(stage);
+  clock.getDelta();loop();
+};
+V.close=()=>{
+  cancelAnimationFrame(raf);raf=0;if(ro){ro.disconnect();ro=null}
+  if(scn){scn.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)[].concat(o.material).forEach(m=>m.dispose())});scn=null}
+  if(ctl){ctl.dispose();ctl=null}S=null;fly=null;if(R&&R.domElement.parentNode)R.domElement.remove();
+};
+function resize(){if(!stage)return;const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;R.setSize(w,h);cam.aspect=w/h;cam.updateProjectionMatrix()}
+function loop(){
+  raf=requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.05);time+=dt;
+  if(fly){fly.t=Math.min(1,fly.t+dt/1.1);const t=fly.t,e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;cam.position.lerpVectors(fly.a,fly.b,e);ctl.target.lerpVectors(fly.at,fly.bt,e);if(t>=1)fly=null}
+  S.update(dt,time);ctl.update();R.render(scn,cam);labels();
+}
+function labels(){
+  if(!S.labels)return;const w=stage.clientWidth,h=stage.clientHeight;
+  S.labels.forEach(l=>{
+    if(!l.show()){l.el.style.opacity=0;return}
+    tv.copy(typeof l.p==='function'?l.p():l.p).project(cam);
+    const vis=tv.z<1&&Math.abs(tv.x)<1.05&&Math.abs(tv.y)<1.05;l.el.style.opacity=vis?1:0;
+    const txt=typeof l.t==='function'?l.t():l.t;if(l.el.textContent!==txt)l.el.textContent=txt;
+    l.el.style.transform=`translate(${(tv.x*.5+.5)*w}px,${(-tv.y*.5+.5)*h}px) translate(-50%,-50%)`;
+  });
+}
+function pick(e){
+  const r=R.domElement.getBoundingClientRect();ptr.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ptr,cam);
+  let fallback=null;
+  for(const h of ray.intersectObjects(scn.children,true)){
+    let ok=true,inf=null;for(let q=h.object;q;q=q.parent){if(!q.visible||q.userData.noPick){ok=false;break}if(!inf&&q.userData.info)inf=q.userData.info}
+    if(!ok)continue;const m=h.object.material,see=m&&m.transparent?m.opacity:1;if(see<.03)continue;
+    if(see<.6){if(inf&&!fallback)fallback=inf;continue}
+    if(inf){showInfo(inf);return}break;
+  }
+  fallback?showInfo(fallback):hideInfo();
+}
+function showInfo(i){if(typeof i==='function')i=i();const b=$('info3d');b.innerHTML=`<b>${i.t}</b>${i.d||''}`;b.classList.add('on')}
+function hideInfo(){const b=$('info3d');if(b)b.classList.remove('on')}
+function buildCtrl(){
+  $('ctrl').innerHTML=`<div class="p3"><div class="meta"><span id="stn"></span><span class="dots" id="dots"></span></div><h3 id="stt"></h3><div id="std" class="std"></div><div id="extra"></div>
+  <div class="row" style="margin-top:12px"><button class="btn" id="pv">→ السابق</button><button class="btn pri" id="nx">التالي ←</button></div></div>
+  <p class="tip">👆 اسحب لتدوير المشهد · إصبعان للتكبير · اضغط على أي جزء لمعرفة المزيد</p>`;
+  $('pv').onclick=()=>go(stepI-1);$('nx').onclick=()=>go(stepI+1>=S.steps.length?0:stepI+1);
+  $('dots').innerHTML=S.steps.map((_,k)=>`<i data-k="${k}"></i>`).join('');$('dots').onclick=e=>{const k=e.target.dataset.k;if(k!==undefined)go(+k)};
+  if(S.extra)S.extra($('extra'));
+}
+function go(i,instant){
+  if(!S)return;i=Math.max(0,Math.min(S.steps.length-1,i));stepI=i;const st=S.steps[i];if(S.onStep)S.onStep(i);
+  if(st.cam){const key=st.cam+'|'+st.target;if(key!==camKey){camKey=key;const b=v3(...st.cam),bt=v3(...st.target);
+    if(instant){cam.position.copy(b);ctl.target.copy(bt);ctl.update()}else fly={a:cam.position.clone(),b,at:ctl.target.clone(),bt,t:0}}}
+  txt();hideInfo();
+}
+function txt(){
+  const st=S.steps[stepI],f=x=>typeof x==='function'?x():x;
+  $('stn').textContent=`الخطوة ${stepI+1} من ${S.steps.length}`;$('stt').textContent=f(st.t);$('std').innerHTML=f(st.d);
+  [...$('dots').children].forEach((d,k)=>d.classList.toggle('on',k===stepI));
+  $('pv').disabled=stepI===0;$('nx').textContent=stepI===S.steps.length-1?'↺ من البداية':'التالي ←';
+}
+V.refresh=txt;
+
+// ================= SCENE: growth zones =================
+function growth(scene){
+  const plant=new THREE.Group(),root=new THREE.Group(),bone=new THREE.Group();scene.add(plant,root,bone);
+  // plant overview
+  const soil=noPick(new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,1.9,40),T(0x8d6e63,.3)));soil.position.y=-.95;plant.add(soil);
+  const stemM=M(0x66bb6a);
+  plant.add(info(tube([[0,0,0],[0,.8,.03],[0,1.5,-.02],[0,2.2,0]],.06,stemM),'الساق','تنمو طولاً بفضل القمة النامية في نهايتها.'));
+  [[.75,1,1],[1.25,-1,.5],[1.75,1,-.6]].forEach(([y,s,r])=>{const lf=info(ball(1,M(0x43a047)),'ورقة','تتشكل الأوراق الجديدة قرب القمة النامية للساق.');lf.scale.set(.42,.04,.2);lf.position.set(s*.42,y,0);lf.rotation.set(0,r*.4,s*-.35);plant.add(lf)});
+  const rm=M(0xbcaaa4);
+  plant.add(info(tube([[0,0,0],[0,-.6,.02],[.03,-1.15,0],[0,-1.6,0]],.045,rm),'الجذر','ينمو طولاً بفضل القمة النامية في نهايته.'));
+  [[[0,-.35,0],[.4,-.6,.1],[.75,-.95,.15]],[[0,-.7,0],[-.4,-.95,-.1],[-.7,-1.3,-.1]]].forEach(c=>plant.add(tube(c,.025,rm)));
+  const glows=[[0,2.27,0],[0,-1.66,0]].map((q,k)=>{const h=info(ball(.2,T(0xffeb3b,.5,{emissive:0xffeb3b,emissiveIntensity:1})),k?'القمة النامية للجذر':'القمة النامية للساق','منطقة نمو: تضم المنطقة المرستيمية (انقسامات خلوية كثيرة) ومنطقة الاستطالة (تزداد أبعاد الخلايا).');h.position.set(...q);plant.add(h);return h});
+
+  // root tip cells
+  const cw=.2,COLS=5,LAY=2;
+  const zm={mer:T(0xf06292,.6,{emissive:0xf06292,emissiveIntensity:0}),el:T(0x81c784,.5,{emissive:0x81c784,emissiveIntensity:0}),mat:T(0xc5e1a5,.45)};
+  const edgeG=new THREE.EdgesGeometry(new THREE.BoxGeometry(1,1,1)),edgeM=new THREE.LineBasicMaterial({color:0x33691e,transparent:true,opacity:.55});
+  const boxG=new THREE.BoxGeometry(1,1,1),vacG=new THREE.SphereGeometry(1,14,10),vacM=M(0x4fc3f7,{transparent:true,opacity:.8}),nucM=M(0x6a1b9a);
+  const zinfo={mer:['المنطقة المرستيمية','خلايا صغيرة تنقسم باستمرار (انقسام خيطي متساوي) ← زيادة عدد الخلايا.'],el:['منطقة الاستطالة','خلايا تمتص الماء فتنتفخ فجواتها وتزداد أبعادها ← استطالة.'],mat:['خلايا مكتملة الاستطالة','تحمل الشعيرات الجذرية التي تمتص الماء والأملاح المعدنية.']};
+  const rowsDef=[...Array(3)].map(()=>({z:'mat',b:.55})).concat([...Array(5)].map((_,e)=>({z:'el',b:.5-e*.07}))).concat([...Array(5)].map(()=>({z:'mer',b:.17})));
+  const rows=rowsDef.map(r=>{const cells=[];
+    for(let c=0;c<COLS;c++)for(let l=0;l<LAY;l++){
+      const m=info(new THREE.Mesh(boxG,zm[r.z]),...zinfo[r.z]);m.position.set((c-2)*cw,0,(l-.5)*cw);m.add(noPick(new THREE.LineSegments(edgeG,edgeM)));root.add(m);
+      const vac=noPick(new THREE.Mesh(vacG,vacM));root.add(vac);
+      const nu=r.z==='mer'?[0,1].map(()=>{const n=noPick(ball(.03,nucM));root.add(n);return n}):null;
+      cells.push({m,vac,nu,ph:Math.random()*3});
+    }return {...r,cells}});
+  const cap=info(ball(1,T(0xa1887f,.55)),'نهاية الجذر','تحمي القمة النامية للجذر أثناء تقدمه في التربة.');cap.scale.set(.55,.3,.28);root.add(cap);
+  const zbox={mer:noPick(new THREE.LineSegments(edgeG,new THREE.LineBasicMaterial({color:0xd81b60,transparent:true,opacity:0}))),el:noPick(new THREE.LineSegments(edgeG,new THREE.LineBasicMaterial({color:0x2e7d32,transparent:true,opacity:0})))};
+  root.add(zbox.mer,zbox.el);
+  const yTop=1.4;let zr={mer:[0,0],el:[0,0]};
+  function layout(E,t){
+    let y=yTop;zr={mer:[9,-9],el:[9,-9]};
+    rows.forEach(r=>{const h=r.z==='el'?lerp(.17,r.b,E):r.b,cy=y-h/2;
+      r.cells.forEach(c=>{const p=c.m.position;p.y=cy;c.m.scale.set(cw*.94,h-.02,cw*.94);
+        const f=r.z==='el'?Math.min(1,(h-.15)/.35):.95;
+        c.vac.position.set(p.x,cy,p.z);c.vac.scale.set(cw*.36*(.35+.65*f),Math.max(.01,(h-.05)*.42*(.3+.7*f)),cw*.3*(.35+.65*f));c.vac.visible=r.z!=='mer';
+        if(c.nu){const cyc=((t*.5+c.ph)%3)/3,d=.045*sm(cyc,.4,.8);c.nu[0].position.set(p.x,cy+d,p.z);c.nu[1].position.set(p.x,cy-d,p.z)}
+      });
+      if(r.z!=='mat'){zr[r.z][0]=Math.min(zr[r.z][0],y-h);zr[r.z][1]=Math.max(zr[r.z][1],y)}y-=h});
+    cap.position.set(0,y-.04,0);
+    ['mer','el'].forEach(z=>{const b=zbox[z];b.position.y=(zr[z][0]+zr[z][1])/2;b.scale.set(COLS*cw+.14,zr[z][1]-zr[z][0]+.05,LAY*cw+.14)});
+  }
+  layout(1,0);
+  rows.slice(0,3).forEach(r=>{const y=r.cells[0].m.position.y;[-1,1].forEach(s=>[-.05,.05].forEach(z=>{const h=info(new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.38,5),rm),'الشعيرات الجذرية','تمتص الماء والأملاح المعدنية من التربة.');h.rotation.z=Math.PI/2;h.position.set(s*.68,y+z*2,z);root.add(h)}))});
+  const wN=24,wim=noPick(new THREE.InstancedMesh(new THREE.SphereGeometry(.03,8,6),M(0x29b6f6,{emissive:0x29b6f6,emissiveIntensity:.5}),wN));root.add(wim);
+  const wp=[...Array(wN)].map(()=>({u:Math.random(),s:Math.random()<.5?1:-1,f:Math.random(),z:(Math.random()-.5)*.3}));let wv=0;const dd=new THREE.Object3D();
+
+  // bone
+  const bm=M(0xf3e5c4),cm=T(0x4fc3f7,.6,{emissive:0x4fc3f7,emissiveIntensity:.25});
+  const shaft=info(new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,1,28),bm),'جسم العظم','يطول العظم بفضل نشاط النسيج الغضروفي قرب نهايتيه.');shaft.rotation.z=Math.PI/2;bone.add(shaft);
+  const epi=[0,1].map(()=>{const e=info(ball(.4,bm),'نهاية العظم','يفصلها عن جسم العظم النسيج الغضروفي (منطقة النمو).');bone.add(e);return e});
+  const plates=[0,1].map(()=>{const pl=info(new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.14,28),cm),'النسيج الغضروفي (منطقة النمو)','نسيج متخصص تنقسم خلاياه الإنشائية باستمرار، فيطول العظم ← نمو الحيوان.');pl.rotation.z=Math.PI/2;bone.add(pl);return pl});
+  const bc=[];plates.forEach((pl,k)=>{for(let j=0;j<7;j++){const s=noPick(ball(.04,M(0x0277bd)));bone.add(s);bc.push({s,k,a:j*.9,r:j?.17:0,ph:j*.7})}});
+  function layoutBone(Lb,t){shaft.scale.y=Lb;[1,-1].forEach((sd,k)=>{plates[k].position.x=sd*(Lb/2+.05);epi[k].position.x=sd*(Lb/2+.42)});
+    bc.forEach(c=>{c.s.position.set(plates[c.k].position.x,Math.cos(c.a)*c.r,Math.sin(c.a)*c.r);c.s.scale.setScalar(1+.35*Math.sin(t*4+c.ph))})}
+
+  const steps=[
+    {t:'أين ينمو النبات؟',d:'يحدث النمو عند النبات في <b>القمم النامية</b>: في نهاية الساق ونهاية الجذر (النقاط المضيئة). اضغط عليها!',cam:[3,1,5.8],target:[0,.25,0]},
+    {t:'المنطقة المرستيمية',d:'قرب نهاية الجذر توجد خلايا صغيرة <b>تنقسم باستمرار</b> بالانقسام الخيطي المتساوي (لاحظ الأنوية البنفسجية تنقسم) ← <b>زيادة عدد الخلايا</b>.',cam:[1.6,-2.1,2.7],target:[0,-2.4,0]},
+    {t:'منطقة الاستطالة',d:'فوق المنطقة المرستيمية، <b>تمتص الخلايا الماء</b> 💧 فتنتفخ فجواتها (الكريات الزرقاء) و<b>تزداد أبعادها</b> ← استطالة الخلايا.',cam:[2.1,-.9,3.7],target:[0,-1.1,0]},
+    {t:'النتيجة: نمو الجذر',d:'<b>زيادة عدد الخلايا</b> (انقسام) + <b>زيادة حجمها</b> (استطالة) = <b>نمو</b>. لاحظ كيف تتقدم قمة الجذر نحو الأسفل.',cam:[3.2,-.4,6.2],target:[0,-.8,0]},
+    {t:'وعند الحيوان؟',d:'يحدث النمو على مستوى <b>الأنسجة المتخصصة</b>، خاصة <b>النسيج الغضروفي</b> (الأزرق) قرب نهايتي العظم، بفضل <b>خلاياه الإنشائية</b> التي تنقسم فيطول العظم.',cam:[0,1.4,4.8],target:[0,0,0]}
+  ];
+  return {steps,
+    labels:[
+      lb('القمة النامية للساق',v3(0,2.6,0),()=>stepI===0),
+      lb('القمة النامية للجذر',v3(0,-2,0),()=>stepI===0),
+      lb('المنطقة المرستيمية',()=>v3(.6,(zr.mer[0]+zr.mer[1])/2,.3),()=>stepI>=1&&stepI<=3),
+      lb('منطقة الاستطالة',()=>v3(.6,(zr.el[0]+zr.el[1])/2,.3),()=>stepI>=2&&stepI<=3),
+      lb('💧 ماء',()=>v3(-.85,zr.el[1]-.25,0),()=>stepI===2),
+      lb('الشعيرات الجذرية',v3(-.95,.85,0),()=>stepI===3),
+      lb('النسيج الغضروفي',()=>v3(plates[0].position.x,.5,0),()=>stepI===4),
+      lb('النسيج الغضروفي',()=>v3(plates[1].position.x,.5,0),()=>stepI===4),
+    ],
+    update(dt,t){
+      const st=stepI;plant.visible=st===0;root.visible=st>=1&&st<=3;bone.visible=st===4;
+      glows.forEach((h,k)=>h.scale.setScalar(1+.25*Math.sin(t*3+k)));
+      const cyc=(t%4.5)/4.5;
+      if(root.visible){
+        layout((st===2||st===3)?lerp(.55,1,sm(cyc,.05,.8)):1,t);
+        zm.mer.emissiveIntensity=(st===1||st===3)?.25+.2*Math.sin(t*4):0;zm.el.emissiveIntensity=(st===2||st===3)?.2+.15*Math.sin(t*4):0;
+        zbox.mer.material.opacity=(st===1||st===3)?.9:0;zbox.el.material.opacity=(st===2||st===3)?.9:0;
+        wv+=((st===2?1:0)-wv)*Math.min(1,dt*3);wim.visible=wv>.02;
+        if(wim.visible){wp.forEach((p,i)=>{p.u+=dt*.6;if(p.u>1){p.u=0;p.f=Math.random()}dd.position.set(p.s*lerp(.9,.15,p.u),lerp(zr.el[0]+.05,zr.el[1]-.05,p.f),p.z);dd.scale.setScalar(Math.max(.001,wv*Math.min(1,p.u/.1,(1-p.u)/.1)));dd.updateMatrix();wim.setMatrixAt(i,dd.matrix)});wim.instanceMatrix.needsUpdate=true}
+      }
+      if(bone.visible)layoutBone(lerp(1.4,2.3,sm(cyc,.05,.85)),t);
+    }};
+}
+
+// ================= SCENE: mitosis =================
+function mitosis(scene){
+  const g=new THREE.Group();scene.add(g);
+  let p=0,pt=0,mode='animal',lastP=-1,lastM='',quiz=null,L=2.3,Rr=2.3,poleX=2,D4=1.5,rng=null,qzEl=null;
+  const sg=new THREE.SphereGeometry(1,56,36),base=sg.attributes.position.array.slice();
+  const memb=info(new THREE.Mesh(sg,T(0xf4a582,.2)),'الغشاء الهيولي','يحيط بالخلية الحيوانية. في نهاية الانقسام يتضيق في الوسط (اختناق هيولي) فتنفصل الخليتان البنتان.');g.add(memb);
+  const wall=info(new THREE.Mesh(new THREE.BoxGeometry(1,1,1),T(0x66bb6a,.14)),'الجدار الخلوي','الخلية النباتية محاطة بجدار صلب، لذلك لا تختنق، بل تتشكل صفيحة خلوية (حاجز وسطي) في وسطها.');
+  wall.add(noPick(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1,1,1)),new THREE.LineBasicMaterial({color:0x2e7d32}))));g.add(wall);
+  const plate=info(new THREE.Mesh(new THREE.BoxGeometry(.07,1,1),M(0x2e7d32)),'الصفيحة الخلوية (حاجز وسطي)','تتشكل من مركز الخلية النباتية نحو الأطراف فتفصل الخليتين البنتين.');g.add(plate);
+  const nm=T(0x9575cd,.25),nuc=info(ball(1.3,nm),'الغلاف النووي','يحيط بالنواة، ويزول في المرحلة التمهيدية.');g.add(nuc);
+  const dn=[0,1].map(()=>{const m=info(ball(.7,T(0x9575cd,.25)),'نواة الخلية البنت','تتشكل من جديد حول كل مجموعة صبغيات، وتحمل نفس الصيغة الصبغية (2ن).');g.add(m);return m});
+  const poles=[0,1].map(()=>{const m=info(ball(.1,M(0xffa726,{emissive:0xffa726,emissiveIntensity:.7})),'قطب الخلية','تنطلق منه خيوط المغزل.');g.add(m);return m});
+  const eqm=new THREE.MeshBasicMaterial({color:0x78909c,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false});
+  const eq=noPick(new THREE.Mesh(new THREE.CircleGeometry(1.25,48),eqm));eq.rotation.y=Math.PI/2;g.add(eq);
+  const NF=18,fp=new Float32Array(NF*6),fg=new THREE.BufferGeometry();fg.setAttribute('position',new THREE.BufferAttribute(fp,3));
+  const fm=new THREE.LineBasicMaterial({color:0xffa726,transparent:true,opacity:0}),fib=noPick(new THREE.LineSegments(fg,fm));g.add(fib);
+  const chInfo=()=>p<2.3?{t:'صبغي',d:'يتكون من كروماتيدين شقيقين مرتبطين بالقسيم المركزي (تضاعف ADN قبل الانقسام).'}:{t:'كروماتيد',d:'بعد الانفصال يتجه كل كروماتيد نحو أحد القطبين ليصبح صبغياً في الخلية البنت.'};
+  const cenM=M(0xffd54f);
+  const ch=[0,1,2,3].map(i=>{
+    const len=i<2?.95:.6,col=i%2?0xe91e63:0x5e35b1,mt=M(col,{emissive:col,emissiveIntensity:.15});
+    const grp=new THREE.Group();g.add(grp);
+    const sis=[1,-1].map(side=>{const c=new THREE.Group();grp.add(c);
+      const arms=[1,-1].map(u=>{const pv=new THREE.Group();const cap=info(new THREE.Mesh(new THREE.CapsuleGeometry(.085,len/2,4,10),mt),chInfo);cap.position.y=u*(len/4+.05);pv.add(cap);c.add(pv);return pv});
+      c.add(info(ball(.1,cenM),'القسيم المركزي','نقطة ارتباط الكروماتيدين الشقيقين، وعندها ترتبط خيوط المغزل.'));
+      return {c,arms,side}});
+    const a=i*1.7+.5,r=.35+(i%2)*.3,an=i*Math.PI/2+.5;
+    return {grp,sis,P:v3(Math.cos(a)*r,((i*.37)%1-.5)*1.1,Math.sin(a)*r),Q:new THREE.Quaternion().setFromEuler(new THREE.Euler(i*1.3+.3,i*.9,i*2.1)),M:v3(0,Math.cos(an)*.68,Math.sin(an)*.68),ph:i*1.6};
+  });
+  const tw=v3();
+  function deform(pinch){const a=sg.attributes.position.array;for(let k=0;k<a.length;k+=3){const X=base[k]*L,f=Rr*(1-pinch*Math.exp(-X*X/.45));a[k]=X;a[k+1]=base[k+1]*f;a[k+2]=base[k+2]*f}sg.attributes.position.needsUpdate=true;sg.computeVertexNormals();sg.computeBoundingSphere()}
+  const endQuiz=()=>{quiz=null;if(qzEl)qzEl.innerHTML=''};
+  const steps=[
+    {t:'قبل الانقسام',d:'تضاعف ADN، فأصبح كل صبغي مكوناً من <b>كروماتيدين</b>. الصبغيات رفيعة وطويلة داخل النواة. (في هذا النموذج: 2ن = 4 صبغيات)',p:0},
+    {t:'1. المرحلة التمهيدية',d:'<b>تتكاثف الصبغيات</b> فتصبح قصيرة وسميكة ومرئية، و<b>يزول الغلاف النووي</b> تدريجياً، وتبدأ خيوط المغزل في التشكل.',p:1},
+    {t:'2. المرحلة الاستوائية',d:'<b>تصطف الصبغيات على خط الاستواء</b> (المستوى الوسطي للخلية)، وترتبط بخيوط المغزل عند القسيم المركزي.',p:2},
+    {t:'3. المرحلة الانفصالية',d:'<b>ينفصل الكروماتيدان</b> في كل صبغي، و<b>ينتقل كل منهما نحو أحد القطبين</b>. لاحظ أن كل قطب يتلقى نفس الصبغيات.',p:3},
+    {t:'4. المرحلة النهائية',d:()=>`يتشكل غلاف نووي حول كل مجموعة صبغيات، ثم ${mode==='animal'?'<b>تختنق الهيولى</b> (تضيق الغشاء في الوسط)':'<b>تتشكل صفيحة خلوية</b> (حاجز وسطي) من المركز نحو الأطراف'}، فتتكون <b>خليتان بنتان متماثلتان وراثياً</b> (2ن).<br><small>جرّب التبديل بين الخلية الحيوانية والنباتية 👇</small>`,p:4}
+  ].map(s=>Object.assign(s,{cam:[0,1.3,8.2],target:[0,0,0]}));
+  return {steps,
+    labels:[
+      lb('الغلاف النووي',v3(0,1.32,0),()=>p<.75),
+      lb('خيوط المغزل',()=>v3(poleX*.55,.62,0),()=>p>1.5&&p<3.4),
+      lb('خط الاستواء',v3(0,-1.35,0),()=>p>1.6&&p<2.45),
+      lb('قطب',()=>v3(poleX+.28,0,0),()=>mode==='animal'&&p>1&&p<3.7),
+      lb(()=>mode==='animal'?'اختناق هيولي':'صفيحة خلوية',()=>v3(0,Rr*.9,0),()=>p>3.55),
+      lb('خلية بنت 1',()=>v3(D4,-Rr*.85,0),()=>p>3.8),
+      lb('خلية بنت 2',()=>v3(-D4,-Rr*.85,0),()=>p>3.8),
+    ],
+    onStep(i){endQuiz();pt=steps[i].p;if(rng)rng.value=pt},
+    extra(el){
+      el.innerHTML=`<div class="seg"><button data-m="animal" class="on">🐾 خلية حيوانية</button><button data-m="plant">🌿 خلية نباتية</button></div>
+      <input type="range" class="scrub" min="0" max="4" step="0.01" value="0"><div class="scrubl"><span>قبل</span><span>تمهيدية</span><span>استوائية</span><span>انفصالية</span><span>نهائية</span></div>
+      <button class="btn qbtn">🎯 اختبرني: أي مرحلة هذه؟</button><div class="qz"></div>`;
+      const segs=el.querySelectorAll('.seg button');segs.forEach(b=>b.onclick=()=>{mode=b.dataset.m;segs.forEach(x=>x.classList.toggle('on',x===b));if(!quiz)V.refresh()});
+      rng=el.querySelector('.scrub');rng.oninput=()=>{const v=+rng.value;go(Math.round(v));pt=v;rng.value=v};
+      qzEl=el.querySelector('.qz');
+      el.querySelector('.qbtn').onclick=()=>{
+        let k;do{k=1+Math.floor(Math.random()*4)}while(k===Math.round(pt));
+        quiz=k;pt=k;rng.value=k;hideInfo();
+        $('stt').textContent='🤔 ما اسم هذه المرحلة؟';$('std').innerHTML='لاحظ وضعية الصبغيات والغلاف النووي، ثم اختر:';
+        qzEl.innerHTML=['التمهيدية','الاستوائية','الانفصالية','النهائية'].map((n,j)=>`<button class="opt" data-j="${j+1}">${n}</button>`).join('');
+        qzEl.onclick=e=>{const b=e.target.closest('.opt');if(!b||!quiz)return;const j=+b.dataset.j;
+          if(j===quiz){go(j);$('std').innerHTML='✅ <b>صحيح!</b> '+$('std').innerHTML}else b.classList.add('wrong')};
+      };
+    },
+    update(dt,t){
+      p+=(pt-p)*Math.min(1,dt*2.4);if(Math.abs(pt-p)<.002)p=pt;
+      const an=mode==='animal';
+      L=2.3*(1+.38*sm(p,2,3.3));Rr=2.3*(1-.12*sm(p,2,3.3));poleX=L-.4;D4=L*.5;const D3=1.3;
+      if(Math.abs(p-lastP)>1e-4||mode!==lastM){deform(an?sm(p,3.3,4)*.97:0);lastP=p;lastM=mode}
+      memb.visible=an;wall.visible=!an;wall.scale.set(2*L*.9,2*Rr*.82,2*Rr*.82);
+      const pg=sm(p,3.3,4);plate.visible=!an&&pg>.01;plate.scale.set(1,2*Rr*.82*pg+.001,2*Rr*.82*pg+.001);
+      nm.opacity=.25*(1-sm(p,.35,1.1));nuc.visible=nm.opacity>.01;
+      dn.forEach((m,k)=>{m.position.x=(k?-1:1)*D4;m.material.opacity=.3*sm(p,3.4,4);m.visible=m.material.opacity>.01});
+      poles.forEach((m,k)=>{m.position.x=(k?-1:1)*poleX;const s=sm(p,.6,1.3)*(1-sm(p,3.6,4));m.visible=an&&s>.01;m.scale.setScalar(s+.001)});
+      eqm.opacity=.35*sm(p,1.5,2)*(1-sm(p,2.15,2.6));eq.visible=eqm.opacity>.01;eq.scale.setScalar(Rr/2.3);
+      const cond=sm(p,0,1);
+      const ang=p<2?.38*cond:p<3?lerp(.38,-.9,sm(p,2,2.6)):lerp(-.9,-.15,sm(p,3,4));
+      const th=lerp(.4,1,cond)*lerp(1,.65,sm(p,3.3,4)),ln=lerp(1.6,1,cond)*lerp(1,1.2,sm(p,3.3,4));
+      const sep=p<2?lerp(.02,.1,cond):p<3?lerp(.1,D3,sm(p,2,3)):lerp(D3,D4,sm(p,3,4));
+      ch.forEach(c=>{
+        if(p<1){c.grp.position.copy(c.P);const w=(1-cond)*.04;c.grp.position.x+=Math.sin(t*.9+c.ph)*w;c.grp.position.y+=Math.cos(t*.7+c.ph)*w;c.grp.quaternion.copy(c.Q)}
+        else if(p<2){const k=sm(p,1,2);c.grp.position.lerpVectors(c.P,c.M,k);c.grp.quaternion.slerpQuaternions(c.Q,IDQ,k)}
+        else{const k=lerp(1,.6,sm(p,2,4));c.grp.position.set(0,c.M.y*k,c.M.z*k);c.grp.quaternion.identity()}
+        c.sis.forEach(s=>{s.c.position.x=s.side*sep;s.arms.forEach((pv,j)=>{pv.rotation.z=-(j?-1:1)*s.side*ang;pv.scale.set(th,ln,th)})});
+      });
+      g.updateMatrixWorld(true);
+      const fo=.85*sm(p,1.2,1.9)*(1-sm(p,3.4,3.9));fm.opacity=fo;fib.visible=fo>.01;
+      if(fib.visible){let k=0;ch.forEach(c=>c.sis.forEach(s=>{s.c.getWorldPosition(tw);fp.set([s.side*poleX,0,0,tw.x,tw.y,tw.z],k);k+=6}));
+        for(let j=0;j<10;j++){const sd=j<5?1:-1,a=j*1.256;fp.set([sd*poleX,0,0,-sd*.15,Math.cos(a)*Rr*.42,Math.sin(a)*Rr*.42],k);k+=6}
+        fg.attributes.position.needsUpdate=true;fg.computeBoundingSphere()}
+    }};
+}
+
+// ================= SCENE: chromosome structure =================
+function chromo(scene){
+  const g=new THREE.Group();scene.add(g);let t=0,tt=0,sp=0,spt=0,spin=true;
+  const helPts=[];for(let k=0;k<=160;k++){const u=k/160,a=u*Math.PI*2*10;helPts.push(v3(Math.cos(a)*.25,.22+u*1.25,Math.sin(a)*.25))}
+  const hg=new THREE.TubeGeometry(new THREE.CatmullRomCurve3(helPts),400,.04,6,false),cg=new THREE.CapsuleGeometry(.21,1.05,6,16);
+  function chromatid(side,tr){
+    const c=new THREE.Group(),core=M(0x5e35b1,{transparent:tr,emissive:0x311b92,emissiveIntensity:.25}),hm=M(0xd1c4e9,{transparent:tr}),cm=M(0xffd54f,{transparent:tr});
+    const arms=[0,1].map(()=>{const pv=new THREE.Group();const m=info(new THREE.Mesh(cg,core),'كروماتيد','جزيء ADN ملتف ومتكاثف. الكروماتيدان الشقيقان نسختان متطابقتان.');m.position.y=.85;pv.add(m);
+      pv.add(info(new THREE.Mesh(hg,hm),'ADN ملتف','يتكون الصبغي من ADN ملتف بشدة أثناء الانقسام.'));c.add(pv);return pv});
+    c.add(info(ball(.2,cm),'القسيم المركزي','يربط الكروماتيدين الشقيقين، وينقسم في المرحلة الانفصالية.'));
+    g.add(c);return {c,arms,side,mats:[core,hm,cm]};
+  }
+  const A=chromatid(-1,false),B=chromatid(1,true),w1=v3(),w2=v3();
+  const steps=[
+    {t:'صبغي بكروماتيد واحد',d:'في البداية يتكون الصبغي من <b>كروماتيد واحد</b>: جزيء ADN واحد ملتف.',tt:0,spt:0,cam:[0,.4,6.5],target:[0,0,0]},
+    {t:'تضاعف ADN',d:'<b>قبل الانقسام</b> يتضاعف ADN، فيُنسخ الكروماتيد ويظهر كروماتيد ثانٍ مطابق له تماماً.',tt:1,spt:0,cam:[0,.4,6.5],target:[0,0,0],replay:1},
+    {t:'بنية الصبغي أثناء الانقسام',d:'يصبح الصبغي على شكل X: <b>كروماتيدان شقيقان</b> متماثلان يرتبطان في نقطة تسمى <b>القسيم المركزي</b>.',tt:1,spt:0,cam:[2,1,4.6],target:[0,.2,0]},
+    {t:'لماذا التضاعف مهم؟',d:'في المرحلة الانفصالية ينفصل الكروماتيدان ويذهب كل واحد إلى خلية بنت ← تحصل كل خلية على <b>نسخة كاملة ومطابقة</b> من المعلومة الوراثية، فيبقى عدد الصبغيات ثابتاً.',tt:1,spt:1,cam:[0,.6,8.5],target:[0,0,0]}
+  ];
+  return {steps,
+    labels:[
+      lb(()=>stepI===0?'كروماتيد واحد':'كروماتيد',()=>A.arms[0].localToWorld(v3(0,1.75,0)),()=>stepI!==1||t>.95),
+      lb(()=>stepI===3?'كروماتيد':'كروماتيد شقيق',()=>B.arms[0].localToWorld(v3(0,1.75,0)),()=>stepI>=2||(stepI===1&&t>.95)),
+      lb('القسيم المركزي',()=>A.c.getWorldPosition(w1).add(B.c.getWorldPosition(w2)).multiplyScalar(.5).add(v3(0,-.35,0)),()=>stepI===2||(stepI===1&&t>.95)),
+      lb('← الخلية البنت 1',()=>A.c.getWorldPosition(w1).add(v3(0,-2,0)),()=>stepI===3&&sp>.5),
+      lb('← الخلية البنت 2',()=>B.c.getWorldPosition(w2).add(v3(0,-2,0)),()=>stepI===3&&sp>.5),
+    ],
+    onStep(i){tt=steps[i].tt;spt=steps[i].spt;if(steps[i].replay)t=0},
+    extra(el){el.innerHTML=`<div class="row" style="margin-top:12px"><button class="btn" id="rp">▶ أعد عرض التضاعف</button><button class="btn" id="sp">⏸ إيقاف الدوران</button></div>`;
+      $('rp').onclick=()=>{go(1);t=0};$('sp').onclick=e=>{spin=!spin;e.target.textContent=spin?'⏸ إيقاف الدوران':'⟳ تدوير تلقائي'}},
+    update(dt){
+      t+=(tt-t)*Math.min(1,dt*(tt>t?.9:3));sp+=(spt-sp)*Math.min(1,dt*1.5);if(spin)g.rotation.y+=dt*.3;
+      const th=.3*t*(1-sp*.4),off=.24*t+1.4*sp;A.c.position.x=-off;B.c.position.x=off;
+      [A,B].forEach(s=>{s.arms[0].rotation.z=-s.side*th;s.arms[1].rotation.z=Math.PI+s.side*th});
+      B.c.scale.setScalar(lerp(.7,1,t));B.mats.forEach(m=>m.opacity=sm(t,.05,.6));B.c.visible=t>.04;
+    }};
+}
+
+// ================= SCENE: sap circulation =================
+function sap(scene){
+  const g=new THREE.Group();scene.add(g);
+  const soil=noPick(new THREE.Mesh(new THREE.CylinderGeometry(2.1,2.1,1.9,48),T(0x795548,.28)));soil.position.y=-1.05;g.add(soil);
+  const stemM=M(0x7cb342);
+  g.add(info(tube([[0,-.1,0],[0,1,.02],[0,2,-.02],[0,3,0]],.075,stemM),'الساق','تحتوي على الأوعية الخشبية (نسغ خام صاعد) واللحاء (نسغ كامل نازل).'));
+  const budM=M(0x9ccc65,{emissive:0x9ccc65,emissiveIntensity:0}),bud=info(ball(.09,budM),'القمة النامية (عضو نامٍ)','تستعمل المادة العضوية في النمو (الأوراق، الساق...).');bud.position.set(0,3.05,0);g.add(bud);
+  const leafM=M(0x43a047,{emissive:0xffa000,emissiveIntensity:0});
+  const leaves=[[.85,2.5,.1,1],[-.85,2.15,-.1,-1],[.8,1.55,-.2,1],[-.7,2.8,.2,-1]].map(([x,y,z,s])=>{
+    g.add(tube([[0,y-.3,0],[s*.25,y-.12,z*.5],[x*.55,y,z*.8]],.025,stemM,12));
+    const lf=info(ball(1,leafM),'الورقة','مقر التركيب الضوئي: تُصنع فيها المادة العضوية (سكريات) بوجود الضوء واليخضور والماء و CO₂.');lf.scale.set(.42,.045,.22);lf.position.set(x,y,z);lf.rotation.set(0,0,s*.25);g.add(lf);
+    return {p:v3(x,y,z),base:[x*.55,y,z*.8],y,s}});
+  g.add(tube([[0,1.2,0],[-.3,1.12,.15],[-.48,.98,.27]],.02,stemM,12));
+  const fruitM=M(0xe53935,{emissive:0xe53935,emissiveIntensity:0}),fruit=info(ball(.17,fruitM),'الثمرة (عضو مستهلك)','تستقبل المادة العضوية عبر اللحاء، وتُخزَّن في بذورها على شكل نشا.');fruit.position.set(-.52,.83,.29);g.add(fruit);
+  const rootM=M(0xbcaaa4,{emissive:0xff7043,emissiveIntensity:0});
+  const RT=[[[0,-.1,0],[0,-.7,.05],[.05,-1.3,0],[0,-1.75,0]],[[0,-.45,0],[.45,-.75,.15],[.95,-1.2,.25]],[[0,-.8,0],[-.5,-1.1,-.15],[-.95,-1.55,-.15]],[[0,-.3,0],[-.4,-.55,.3],[-.75,-.85,.5]]];
+  RT.forEach((c,k)=>g.add(info(tube(c,k?.03:.05,rootM,24),'الجذور','تمتص الماء والأملاح المعدنية عبر الشعيرات الجذرية، وتستعمل المادة العضوية في التنفس والنمو.')));
+  RT.forEach(c=>{const tip=v3(...c[c.length-1]),prev=v3(...c[c.length-2]);for(let k=0;k<8;k++){const h=info(new THREE.Mesh(new THREE.CylinderGeometry(.007,.007,.17,4),rootM),'الشعيرات الجذرية','تمتص الماء والأملاح المعدنية من التربة.');h.position.copy(tip.clone().lerp(prev,.12+k*.05));h.rotation.set(k*1.1,k*2.3,k*.7);g.add(h)}});
+  const tub=[[0,-.25,0],[.45,-.35,-.3],[.8,-.48,-.45]];g.add(tube(tub,.022,rootM,12));
+  const tubM=M(0xc9a26b,{emissive:0xffb300,emissiveIntensity:0}),tuber=info(ball(1,tubM),'الدرنة (عضو مدخر)','تُخزَّن فيها المادة العضوية على شكل نشا.');tuber.scale.set(.3,.2,.22);tuber.position.set(1.02,-.55,-.52);g.add(tuber);
+  const sunP=v3(2.4,4.3,-1.3),sun=info(ball(.35,new THREE.MeshBasicMaterial({color:0xffd54f})),'الشمس','مصدر الضوء: شرط من شروط التركيب الضوئي.');sun.position.copy(sunP);g.add(sun);
+  const halo=noPick(ball(.6,new THREE.MeshBasicMaterial({color:0xffe082,transparent:true,opacity:.25,depthWrite:false})));halo.position.copy(sunP);g.add(halo);
+
+  const tipsRev=RT.map((c,k)=>[...c].reverse().concat(k?[[0,-.1,0]]:[]));
+  const xc=[0,1,2,3,4,5].map(i=>{const l=leaves[(i+(i>3?1:0))%4];return curve([...tipsRev[i%4],[0,.4,0],[0,l.y-.3,0],l.base,l.p])});
+  const l2s=l=>[l.p,l.base,[0,l.y-.3,0]];
+  const pc=[
+    curve([...l2s(leaves[0]),[0,1.6,0],[0,1.2,0],[-.3,1.12,.15],[-.48,.98,.27],[-.52,.83,.29]]),
+    curve([...l2s(leaves[3]),[0,3.02,0]]),
+    curve([...l2s(leaves[1]),[0,.8,0],[0,-.25,0],...tub.slice(1),[1.02,-.55,-.52]]),
+    curve([...l2s(leaves[2]),[0,.6,0],[0,-.1,0],...RT[0].slice(1)]),
+    curve([...l2s(leaves[0]),[0,.8,0],[0,-.45,0],...RT[1].slice(1)]),
+    curve([...l2s(leaves[1]),[0,.8,0],[0,-.8,0],...RT[2].slice(1)]),
+  ];
+  const X=flow(g,xc,70,0x29b6f6,.032,.55,v3(0,0,.045)),P=flow(g,pc,70,0xff9800,.034,.5,v3(0,0,-.045));
+  const rl=()=>leaves[Math.random()*4|0];
+  const light=lin(g,26,0xffee58,.026,()=>{const l=rl();return {a:sunP.clone(),b:l.p.clone().add(v3((Math.random()-.5)*.5,.05,(Math.random()-.5)*.25))}},1.1);
+  const co2=lin(g,14,0x9e9e9e,.05,()=>{const l=rl();return {a:l.p.clone().add(v3(Math.random()-.5,Math.random()*.6,Math.random()-.5).normalize().multiplyScalar(1.3)),b:l.p.clone()}},2.2);
+  const vap=lin(g,18,0xb3e5fc,.035,()=>{const l=rl();return {a:l.p.clone(),b:l.p.clone().add(v3(l.s*.6*Math.random(),.9+Math.random()*.5,(Math.random()-.5)*.6))}},2);
+  const sys=[X,P,light,co2,vap];
+  let btnX,btnP;
+  const syncBtns=()=>{if(btnX){btnX.classList.toggle('on',!!X.on);btnP.classList.toggle('on',!!P.on)}};
+  const steps=[
+    {t:'نظرة عامة',d:'يصنع النبات غذاءه في <b>الأوراق</b> ثم يوزعه على كل أعضائه، وفي نفس الوقت يصعد الماء من <b>الجذور</b>.<br>🔵 نسغ خام · 🟠 نسغ كامل. اضغط على أي جزء!',f:[1,1,0,0],cam:[4.2,1.6,5.8],target:[0,.7,0]},
+    {t:'1. مصدر المادة العضوية',d:'في <b>الأوراق</b> (مقر التركيب الضوئي) تُصنع المادة العضوية (<b>سكريات</b>) بشرط:<br>☀️ وجود الضوء · 🟢 وجود اليخضور · 💧 توفر الماء و CO₂',f:[1,0,1,0],cam:[2.6,3.4,3.6],target:[.2,2.3,0]},
+    {t:'2. النسغ الخام (صاعد)',d:'تمتص <b>الشعيرات الجذرية</b> الماء والأملاح المعدنية، فيصعد <b>النسغ الخام</b> في <b>الأوعية الخشبية</b> من الجذور إلى الأوراق، بفعل <b>الخاصية الشعرية وقوة النتح</b> (تبخر الماء من الأوراق).',f:[1,0,0,1],cam:[3.4,.4,4.8],target:[0,.3,0]},
+    {t:'3. النسغ الكامل (نازل)',d:'تنتقل المادة العضوية من الأوراق على شكل <b>محلول سكري</b> عبر <b>اللحاء</b> نحو الأعضاء المستهلكة (الجذور، الثمار…) وأعضاء التخزين، بفضل <b>الضغط الأسموزي</b>.',f:[0,1,0,0],cam:[-3.6,1.2,4.6],target:[0,.6,0]},
+    {t:'4. أماكن الاستهلاك والتخزين',d:'🌱 <b>الأعضاء النامية</b>: تستعملها في النمو<br>🌿 <b>الجذور</b>: في التنفس والنمو<br>🥔 <b>الأعضاء المدخرة</b>: تخزنها على شكل <b>نشا</b> (البذور، الدرنات)<br>اضغط على الأعضاء المضيئة.',f:[0,1,0,0],sink:1,cam:[3.2,.6,5],target:[0,.4,0]},
+    {t:'دوران النسغ كاملاً',d:'⬆️ خام في الأوعية الخشبية + ⬇️ كامل في اللحاء.<br>الأهمية: تغذية كل الأعضاء بالمادة العضوية، تحقيق النمو والتطور، تخزين الفائض، والمحافظة على توازن النبات وحيويته.',f:[1,1,0,1],cam:[4.6,1.8,6.2],target:[0,.7,0]}
+  ];
+  return {steps,
+    labels:[
+      lb('☀️ الضوء',()=>sunP.clone().add(v3(0,-.65,0)),()=>stepI===1),
+      lb('CO₂',v3(1.75,3.05,.3),()=>stepI===1),
+      lb('💧 ماء',v3(.22,1.0,.1),()=>stepI===1),
+      lb('سكريات تتشكل',()=>leaves[0].p.clone().add(v3(.1,.28,0)),()=>stepI===1),
+      lb('الأوعية الخشبية ⬆️',v3(.32,.9,.1),()=>stepI===2||stepI===5),
+      lb('الشعيرات الجذرية',v3(1.1,-1.4,.25),()=>stepI===2),
+      lb('النتح 💨',v3(1.3,3.35,0),()=>stepI===2),
+      lb('اللحاء ⬇️',v3(-.3,1.6,-.1),()=>stepI===3||stepI===5),
+      lb('ثمرة',v3(-.55,.55,.3),()=>stepI===3||stepI===4),
+      lb('درنة: نشا',v3(1.05,-.88,-.5),()=>stepI===3||stepI===4),
+      lb('قمة نامية: نمو',v3(0,3.32,0),()=>stepI===4),
+      lb('جذور: تنفس ونمو',v3(-.95,-1.85,-.15),()=>stepI===4),
+      lb('الأوراق',v3(-.85,2.42,-.1),()=>stepI===0),
+      lb('الساق',v3(.22,1.2,0),()=>stepI===0),
+      lb('الجذور',v3(.3,-2,0),()=>stepI===0),
+    ],
+    onStep(i){const f=steps[i].f;X.on=f[0];P.on=f[1];light.on=f[2];co2.on=f[2];vap.on=f[3];syncBtns()},
+    extra(el){el.innerHTML=`<div class="seg"><button id="bx">⬆️ النسغ الخام</button><button id="bp">⬇️ النسغ الكامل</button></div>`;
+      btnX=$('bx');btnP=$('bp');btnX.onclick=()=>{X.on=X.on?0:1;syncBtns()};btnP.onclick=()=>{P.on=P.on?0:1;syncBtns()};syncBtns()},
+    update(dt,t){
+      sys.forEach(s=>s.update(dt));const st=steps[stepI];
+      leafM.emissiveIntensity=st.f[2]?.2+.18*Math.sin(t*3):0;
+      const k=st.sink?.3+.3*Math.sin(t*4):0;budM.emissiveIntensity=k;fruitM.emissiveIntensity=k*.6;tubM.emissiveIntensity=k;rootM.emissiveIntensity=k*.5;
+      halo.scale.setScalar(1+.1*Math.sin(t*2));
+    }};
+}
+
+// ================= SCENE: conducting vessels =================
+function vessels(scene){
+  const g=new THREE.Group();scene.add(g);const H=4;
+  g.add(noPick(new THREE.Mesh(new THREE.CylinderGeometry(1.3,1.3,H,48,1,true),T(0x9ccc65,.12))));
+  [-H/2,H/2].forEach(y=>{const r=noPick(new THREE.Mesh(new THREE.RingGeometry(1.27,1.32,64),new THREE.MeshBasicMaterial({color:0x558b2f,side:THREE.DoubleSide})));r.rotation.x=-Math.PI/2;r.position.y=y;g.add(r)});
+  const xm=T(0x42a5f5,.3),xr=M(0x1e88e5,{transparent:true,opacity:1}),pm=T(0xffa726,.3),pd=M(0xef6c00,{transparent:true,opacity:.7,side:THREE.DoubleSide});
+  const xs=[],ps=[];
+  [0,1,2].forEach(k=>{const a=k*Math.PI*2/3+.3,xp=v3(Math.cos(a)*.45,0,Math.sin(a)*.45),pp=v3(Math.cos(a)*.92,0,Math.sin(a)*.92);xs.push(xp);ps.push(pp);
+    const xv=info(new THREE.Mesh(new THREE.CylinderGeometry(.15,.15,H,20,1,true),xm),'وعاء خشبي','ينقل النسغ الخام (ماء + أملاح معدنية) صعوداً من الجذور نحو الأوراق.');xv.position.copy(xp);g.add(xv);
+    for(let y=-H/2+.15;y<H/2;y+=.22){const r=info(new THREE.Mesh(new THREE.TorusGeometry(.15,.018,6,20),xr),'وعاء خشبي','جداره مدعّم بحلقات، ينقل النسغ الخام صعوداً.');r.rotation.x=Math.PI/2;r.position.set(xp.x,y,xp.z);g.add(r)}
+    const pv=info(new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,H,20,1,true),pm),'أنبوب لحائي','ينقل النسغ الكامل (محلول سكري) من الأوراق نحو باقي أعضاء النبات.');pv.position.copy(pp);g.add(pv);
+    for(let y=-H/2+.4;y<H/2;y+=.7){const d=info(new THREE.Mesh(new THREE.CircleGeometry(.13,20),pd),'أنبوب لحائي','ينقل النسغ الكامل نزولاً من الأوراق.');d.rotation.x=-Math.PI/2;d.position.set(pp.x,y,pp.z);g.add(d)}
+  });
+  const off=()=>v3((Math.random()-.5)*.14,0,(Math.random()-.5)*.14);
+  const xf=lin(g,36,0x29b6f6,.035,()=>{const c=xs[Math.random()*3|0],o=off();return {a:c.clone().add(o).setY(-H/2),b:c.clone().add(o).setY(H/2)}},3);
+  const pf=lin(g,36,0xff9800,.035,()=>{const c=ps[Math.random()*3|0],o=off().multiplyScalar(.8);return {a:c.clone().add(o).setY(H/2),b:c.clone().add(o).setY(-H/2)}},3.5);
+  let fx=1,fpv=1;
+  const steps=[
+    {t:'داخل الساق',d:'تحتوي الساق على نوعين من الأوعية الناقلة: <b>الأوعية الخشبية</b> 🔵 و<b>أنابيب اللحاء</b> 🟠.',f:[1,1]},
+    {t:'الأوعية الخشبية',d:'تنقل <b>النسغ الخام</b> (الماء والأملاح المعدنية) <b>صعوداً</b> من الجذور نحو الأوراق، بفعل الخاصية الشعرية وقوة النتح.',f:[1,0]},
+    {t:'أنابيب اللحاء',d:'تنقل <b>النسغ الكامل</b> (المادة العضوية على شكل محلول سكري) <b>نزولاً</b> من الأوراق نحو باقي الأعضاء، بفضل الضغط الأسموزي.',f:[0,1]},
+    {t:'قارن بينهما',d:'<table class="cmp"><tr><th></th><th>🔵 النسغ الخام</th><th>🟠 النسغ الكامل</th></tr><tr><td>الاتجاه</td><td>صاعد</td><td>نازل</td></tr><tr><td>المحتوى</td><td>ماء + أملاح</td><td>مادة عضوية</td></tr><tr><td>الأوعية</td><td>الخشبية</td><td>اللحاء</td></tr><tr><td>القوة</td><td>شعرية + نتح</td><td>ضغط أسموزي</td></tr></table>',f:[1,1]}
+  ].map(s=>Object.assign(s,{cam:[3.2,1.7,4.4],target:[0,0,0]}));
+  return {steps,
+    labels:[
+      lb('⬆️ نحو الأوراق',v3(0,H/2+.3,0),()=>true),
+      lb('⬇️ نحو الجذور',v3(0,-H/2-.3,0),()=>true),
+      lb('وعاء خشبي',()=>xs[0].clone().setY(1.1),()=>stepI!==2),
+      lb('أنبوب لحائي',()=>ps[0].clone().setY(.4),()=>stepI!==1),
+    ],
+    onStep(i){xf.on=steps[i].f[0];pf.on=steps[i].f[1]},
+    update(dt){xf.update(dt);pf.update(dt);const f=steps[stepI].f;fx+=(f[0]-fx)*Math.min(1,dt*4);fpv+=(f[1]-fpv)*Math.min(1,dt*4);
+      const a=.12+.88*fx,b=.12+.88*fpv;xm.opacity=.3*a;xr.opacity=a;pm.opacity=.3*b;pd.opacity=.7*b;g.rotation.y+=dt*.12}};
+}
+
+const SC=[[growth,mitosis,chromo],[sap,vessels]];
+window.V3=V;
+if(window.__pend){const p=window.__pend;window.__pend=null;if(document.getElementById('stage'))V.open(...p)}
+
+</script>
+</body>
+</html>
